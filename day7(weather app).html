@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="https://kit.fontawesome.com/5e8eec8caf.js" crossorigin="anonymous"></script>
+    <style>
+        #display {
+            display: flex;
+            gap: 5%;
+        }
+
+        body {
+            width: 80%;
+            height: 70%;
+            background-color: khaki;
+            border-radius: 3%;
+            margin: auto;
+            padding: 3%;            
+        }
+
+        #display>div:nth-child(1) {
+            width: 30%;
+            /* padding: 4%; */
+        }
+
+        #display>div:nth-child(2) {
+            width: 60%;
+            /* padding: 4%; */
+        }
+
+        form>input {
+            width: 50%;
+        }
+
+        form>button {
+            background-color: lawngreen;
+        }
+
+        form {
+            margin-bottom: 2%;
+        }
+
+        table td {
+            width: 40%;
+            
+        }        
+    </style>
+</head>
+
+<body>
+    <h1>Weather</h1>
+    <form>
+        <input placeholder="enter city name" id="city">
+        <button type="submit">submit</button>
+    </form>
+    <div id="display">
+        <div id="weather_details">
+            <table>
+                <tr>
+                    <td>temp (°C)</td>
+                    <td id="temp">--</td>
+                </tr>
+                <tr>
+                    <td>feels like (°C)</td>
+                    <td id="feels_like">--</td>
+                </tr>
+                <tr>
+                    <td>Humidity</td>
+                    <td id="humidity">--</td>
+                </tr>
+                <tr>
+                    <td>temp max (°C)</td>
+                    <td id="temp_max">--</td>
+                </tr>
+                <tr>
+                    <td>temp min (°C)</td>
+                    <td id="temp_min">--</td>
+                </tr>
+                <tr>
+                    <td>Pressure (mm)</td>
+                    <td id="pressure">--</td>
+                </tr>
+            </table>
+            <br><br><br><br>
+            <div>
+                <table>
+                    <thead>
+                        <tr>
+                            <td>date</td>
+                            <td>weather</td>
+                            <td>temp(°C)</td>
+                        </tr>
+                    </thead>
+                    <tbody id="weather"></tbody>
+                </table>
+            </div>
+        </div>
+        <div id="map"> <iframe width="100%" height="100%" style="border:0" loading="lazy" allowfullscreen src="https://www.google.com/maps/embed/v1/place?key=AIzaSyD5d3M5fcr9BIb8ATMWqAt7qkgv-LdHRrA
+            &q=belfast%United%kingdom">
+            </iframe>
+        </div>
+    </div>
+</body>
+
+</html>
+<script>
+    document.querySelector("form").addEventListener("submit", getdata);
+    let form = document.querySelector("form");
+
+    function getdata(e) {
+        e.preventDefault();
+        console.log(form.city.value)
+        let url = "https://api.openweathermap.org/data/2.5/weather?q=" + form.city.value + "&appid=1a5641907fa70a8b7baae6276293d10b";
+        console.log(url);
+        city_data(url)
+
+    }
+
+    async function city_data(url) {
+        console.log("here")
+        try {
+            //weather;
+
+            let src = "http://api.openweathermap.org/data/2.5/forecast?q=" + form.city.value + "&appid=1a5641907fa70a8b7baae6276293d10b";
+            const temp = await fetch(url);
+            // console.log(temp);
+            const data = await temp.json();
+            // console.log(data.main);
+            display(data.main)
+
+            const data_temp = await fetch(src);
+            const list = await data_temp.json()
+            console.log(list.list);
+            display_list(list.list);
+
+            //map
+
+            let source = "https://www.google.com/maps/embed/v1/place?key=AIzaSyD5d3M5fcr9BIb8ATMWqAt7qkgv-LdHRrA&q=" + form.city.value.split(" ").join("%");
+            console.log(source);
+            document.querySelector("#map>iframe").setAttribute("src", source)
+        } catch (err) {
+            console.log("error", err);
+        }
+    }
+
+    function display(details) {
+        document.getElementById("temp").textContent = Math.ceil(+(details.temp) - 273);
+        document.getElementById("feels_like").textContent = Math.ceil(+(details.feels_like) - 273);
+        document.getElementById("humidity").textContent = details.humidity;
+        document.getElementById("temp_min").textContent = Math.ceil(+(details.temp_min) - 273);
+        document.getElementById("temp_max").textContent = Math.ceil(+(details.temp_max) - 273);
+        document.getElementById("pressure").textContent = details.pressure;
+        return
+    }
+
+    function display_list(arr) {
+        console.log("here32");
+        document.getElementById("weather").innerHTML = "";
+        for (let i = 0; i < 7; i++) {
+            maping(arr[i]);
+        }
+    }
+
+    let maping = function (item) {
+
+        let tr = document.createElement("tr");
+        let td1 = document.createElement("td");
+        td1.innerHTML = item.dt_txt.split(" ")[0];
+
+
+        let td2 = document.createElement("td");
+        if (item.weather[0].main == "Clear") {
+            td2.innerHTML = "<h2><i class='fas fa-sun'></i></h2>"
+        }
+        else if (item.weather[0].main == "Clouds") {
+            td2.innerHTML = "<h2><i class='fas fa-cloud'></i></h2>"
+        }
+        else if (item.weather[0].main == "Rain") {
+            td2.innerHTML = "<h2><i class='fas fa-cloud-rain'></i></h2>"
+        }
+        else if (item.weather[0].main == "Snow") {
+            td2.innerHTML = "<h2><i class='fas fa-snowflake'></i></h2>"
+        }
+        else {
+            td2.innerHTML = "<h2><i class='fas fa-smog'></i></h2>"
+        }
+
+        let td3 = document.createElement("td");
+        td3.textContent = Math.ceil(+(item.main.temp) - 273);
+
+        tr.append(td1, td2, td3);
+        document.getElementById("weather").append(tr);
+    }
+</script>
